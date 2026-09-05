@@ -1,0 +1,5 @@
+numpy
+rasterio
+fastapi
+uvicorn
+pyproj
