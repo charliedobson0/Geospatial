@@ -1,8 +1,9 @@
 from typing import Annotated, List, Optional
-from fastapi import FastAPI, Query, HTTPException
+from fastapi import FastAPI, Query, HTTPException, Response
 from pydantic import BaseModel, Field
 from pystac_client import Client
 from service import calculate_bbox_ndvi
+from visualization import generate_heatmap
 
 
 
@@ -133,6 +134,28 @@ async def get_bounding_box_ndvi(
         "cloud_cover_pct": scene.cloud_cover,
         "metrics": ndvi_results
     }
+
+@app.get("/stac/ndvi/heatmap")
+async def get_ndvi_heatmap(
+    min_lon: float = Query(-78.0, ge=-180.0, le=180.0),
+    min_lat: float = Query(38.7, ge=-90.0, le=90.0),
+    max_lon: float = Query(-76.0, ge=-180.0, le=180.0),
+    max_lat: float = Query(39.4, ge=-90.0, le=90.0),
+    max_cloud_cover: float = Query(10.0, ge=0.0, le=100.0),
+    colormap: str = Query("RdYlGn", description="Build in Matplotlib colormap")
+):
+    bbox = [min_lon, min_lat, max_lon, max_lat]
+
+    # Use helper to fetch scene metadata
+    scene = fetch_latest_scene(bbox)
+
+    ndvi_results = calculate_bbox_ndvi(scene.red_band_url, scene.nir_band_url, bbox)
+
+
+    png_bytes = generate_heatmap(ndvi_results.get("data"), colormap=colormap)
+
+    return Response(content=png_bytes, media_type="image/png")
+    
 
 
 

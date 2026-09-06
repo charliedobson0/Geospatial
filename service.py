@@ -55,5 +55,6 @@ def calculate_bbox_ndvi(
             "mean_ndvi": round(float(np.mean(valid_ndvi)), 3),
             "max_ndvi": round(float(np.max(valid_ndvi)), 3),
             "min_ndvi": round(float(np.min(valid_ndvi)), 3),
-            "pixel_count": int(valid_ndvi.size)
+            "pixel_count": int(valid_ndvi.size),
+            "data": ndvi_array
         }
